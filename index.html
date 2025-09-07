@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tim Lay's - Restaurant</title>
+    <meta name="description" content="Tim Lay's - Restaurant de cuisine locale sénégalaise. Commandez en ligne vos plats préférés avec livraison à domicile.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#153150">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Tim Lay's">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🍽️</span>
+                <span>Tim Lay's</span>
+            </div>
+            <nav class="nav-buttons">
+                <button class="btn btn-primary" id="menuBtn">
+                    <span>📋</span> Menu
+                </button>
+                <button class="btn btn-outline" id="trackBtn">
+                    <span>📦</span> Suivre commande
+                </button>
+                <button class="btn btn-outline" id="adminBtn">
+                    <span>⚙️</span> Admin
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenu principal -->
+    <main class="container">
+        <!-- Section d'accueil -->
+        <section class="hero-section text-center mb-3">
+            <h1>Bienvenue chez Tim Lay's</h1>
+            <p class="text-muted">Découvrez notre cuisine locale authentique avec livraison à domicile</p>
+        </section>
+
+        <!-- Conteneur du menu -->
+        <div id="menuContainer">
+            <!-- Le menu sera généré dynamiquement -->
+        </div>
+
+        <!-- Indicateur de chargement -->
+        <div id="loadingIndicator" class="text-center hidden">
+            <p>Chargement...</p>
+        </div>
+    </main>
+
+    <!-- Bouton panier flottant -->
+    <button class="cart-float" id="cartBtn">
+        🛒 Panier
+        <span class="cart-count hidden" id="cartCount">0</span>
+    </button>
+
+    <!-- Modal Panier -->
+    <div id="cartModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🛒 Votre Panier</h2>
+                <button class="close-btn" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems">
+                    <!-- Articles du panier -->
+                </div>
+                
+                <!-- Options de livraison -->
+                <div class="form-group">
+                    <label class="d-flex align-center gap-1">
+                        <input type="checkbox" id="deliveryCheckbox">
+                        <span>Livraison à domicile (+1000 F)</span>
+                    </label>
+                </div>
+                
+                <div id="deliveryAddressGroup" class="form-group hidden">
+                    <label class="form-label">Adresse de livraison</label>
+                    <input type="text" class="form-control" id="deliveryAddress" 
+                           placeholder="Ex: Quartier Liberté 6, Rue 123">
+                </div>
+
+                <!-- Total -->
+                <div class="cart-total d-flex justify-between align-center mt-2">
+                    <strong>Total: <span id="cartTotal">0 F</span></strong>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-success" id="checkoutBtn">Commander</button>
+                        <button class="btn btn-outline" onclick="app.closeModal('cartModal')">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Commande -->
+    <div id="checkoutModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📝 Finaliser la commande</h2>
+                <button class="close-btn" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="checkoutForm">
+                    <div class="form-group">
+                        <label class="form-label">Nom complet *</label>
+                        <input type="text" class="form-control" id="customerName" 
+                               placeholder="Votre nom complet" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Téléphone *</label>
+                        <input type="tel" class="form-control" id="customerPhone" 
+                               placeholder="77 123 45 67" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email (optionnel)</label>
+                        <input type="email" class="form-control" id="customerEmail" 
+                               placeholder="votre@email.com">
+                    </div>
+
+                    <div class="d-flex gap-1 justify-between mt-2">
+                        <button type="button" class="btn btn-outline" onclick="app.closeModal('checkoutModal')">
+                            Retour
+                        </button>
+                        <button type="button" class="btn btn-success" id="placeOrderBtn">
+                            Confirmer la commande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation -->
+    <div id="confirmationModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✅ Commande confirmée</h2>
+                <button class="close-btn" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenu généré dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Suivi de commande -->
+    <div id="trackModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📦 Suivre une commande</h2>
+                <button class="close-btn" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Numéro de commande</label>
+                    <input type="text" class="form-control" id="trackOrderId" 
+                           placeholder="Ex: ORD-ABC123">
+                </div>
+                
+                <div class="d-flex gap-1 mb-2">
+                    <button class="btn btn-primary" onclick="app.trackOrder()">
+                        Rechercher
+                    </button>
+                    <button class="btn btn-outline" onclick="app.closeModal('trackModal')">
+                        Fermer
+                    </button>
+                </div>
+
+                <div id="trackResult">
+                    <!-- Résultat de la recherche -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Admin -->
+    <div id="adminModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">⚙️ Administration</h2>
+                <button class="close-btn" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="adminContent">
+                    <!-- Interface admin sera chargée ici -->
+                    <div class="text-center">
+                        <p>Interface d'administration</p>
+                        <p class="text-muted">Fonctionnalité en cours de développement...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Styles pour les notifications -->
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 300px;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification-success { background-color: var(--success-color); }
+        .notification-error { background-color: var(--danger-color); }
+        .notification-warning { background-color: var(--warning-color); color: #000; }
+        .notification-info { background-color: var(--primary-color); }
+
+        .close-notification {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            font-size: 1.8rem;
+        }
+
+        .hero-section {
+            padding: 2rem 0;
+            background: linear-gradient(135deg, var(--light-bg), #fff);
+            border-radius: var(--border-radius);
+            margin-bottom: 2rem;
+        }
+
+        .hero-section h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 0.5rem;
+        }
+
+        .item-controls button {
+            min-width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity {
+            min-width: 40px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+            margin: 1rem 0;
+        }
+
+        .order-details {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            color: var(--success-color);
+        }
+
+        @media (max-width: 480px) {
+            .notification {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+
+    <!-- Event Listeners supplémentaires -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de la livraison
+            const deliveryCheckbox = document.getElementById('deliveryCheckbox');
+            const deliveryAddressGroup = document.getElementById('deliveryAddressGroup');
+            
+            deliveryCheckbox?.addEventListener('change', function() {
+                if (this.checked) {
+                    deliveryAddressGroup.classList.remove('hidden');
+                } else {
+                    deliveryAddressGroup.classList.add('hidden');
+                }
+                app.updateCartUI();
+            });
+
+            // Bouton commander
+            document.getElementById('checkoutBtn')?.addEventListener('click', function() {
+                app.closeModal('cartModal');
+                app.showModal('checkoutModal');
+            });
+
+            // Bouton finaliser commande
+            document.getElementById('placeOrderBtn')?.addEventListener('click', function() {
+                app.processOrder();
+            });
+
+            // Charger le panier temporaire s'il existe
+            app.loadTempCart();
+        });
+    </script>
+</body>
+</html>
